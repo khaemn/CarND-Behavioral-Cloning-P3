@@ -12,9 +12,9 @@ from PIL import Image
 from flask import Flask
 from io import BytesIO
 
-from keras.models import load_model
+from tensorflow.keras.models import load_model
 import h5py
-from keras import __version__ as keras_version
+from tensorflow.keras import __version__ as keras_version
 
 sio = socketio.Server()
 app = Flask(__name__)
@@ -51,6 +51,7 @@ controller.set_desired(set_speed)
 @sio.on('telemetry')
 def telemetry(sid, data):
     if data:
+        print("DATA!\n")
         # The current steering angle of the car
         steering_angle = data["steering_angle"]
         # The current throttle of the car
@@ -61,6 +62,9 @@ def telemetry(sid, data):
         imgString = data["image"]
         image = Image.open(BytesIO(base64.b64decode(imgString)))
         image_array = np.asarray(image)
+        # Preprocessing
+        image_array = image_array[80:,:,:]
+        image_array = image_array / 255.
         steering_angle = float(model.predict(image_array[None, :, :, :], batch_size=1))
 
         throttle = controller.update(float(speed))
@@ -85,6 +89,7 @@ def connect(sid, environ):
 
 
 def send_control(steering_angle, throttle):
+    print("send_control!\n")
     sio.emit(
         "steer",
         data={
