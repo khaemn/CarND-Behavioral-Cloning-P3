@@ -1,0 +1,86 @@
+First architecture - LeNet like,
+
+model = Sequential()
+model.add(Input(shape=IMAGE_SIZE))
+model.add(MaxPooling2D(pool_size=(2, 2), strides=2, padding="valid"))
+model.add(Conv2D(8, 3, activation='relu'))
+model.add(MaxPooling2D(pool_size=(2, 2), strides=2, padding="valid"))
+model.add(Conv2D(16, 3, activation='relu'))
+model.add(MaxPooling2D(pool_size=(2, 2), strides=2, padding="valid"))
+model.add(Conv2D(32, 3, activation='relu'))
+model.add(MaxPooling2D(pool_size=(2, 2), strides=2, padding="valid"))
+model.add(Conv2D(128, 3, activation='relu'))
+model.add(MaxPooling2D(pool_size=(2, 2), strides=2, padding="same"))
+model.add(Flatten())
+model.add(Dense(32, activation='sigmoid'))
+model.add(Dense(1, activation='sigmoid'))
+model.compile(loss='mse', optimizer='adam')
+
+Loss on 20 epochs falls fast, but validation does not.
+
+Instead of resizing - just MaxPool (2,2) as the first layer (160*320 pix is too much, the road is much wider)
+Then I cut the image to half (first 80 pixels) - and it worked +- fine too!
+
+Then first layer - to Average pooling, and the image cut to bottom half.
+
+Then augment dataset with flipping
+
+Then introduce a Dropout:
+
+
+model = Sequential()
+model.add(Input(shape=IMAGE_SIZE))
+model.add(AveragePooling2D(pool_size=(3, 3), strides=2, padding="valid"))
+model.add(Dropout(0.2))
+model.add(Conv2D(8, 3, activation='relu'))
+model.add(MaxPooling2D(pool_size=(2, 2), strides=2, padding="valid"))
+model.add(Dropout(0.2))
+model.add(Conv2D(16, 3, activation='relu'))
+model.add(MaxPooling2D(pool_size=(2, 2), strides=2, padding="valid"))
+model.add(Conv2D(32, 3, activation='relu'))
+model.add(MaxPooling2D(pool_size=(2, 2), strides=2, padding="valid"))
+model.add(Conv2D(128, 3, activation='relu'))
+model.add(MaxPooling2D(pool_size=(2, 2), strides=2, padding="same"))
+model.add(Flatten())
+model.add(Dense(32, activation='sigmoid'))
+model.add(Dense(1, activation='sigmoid'))
+
+try running
+$ python3 drive.py --model=model/saved_model.h5 --image_folder=output
+
+(venv-rattus) vhavrylov@KVL1912008:~/Free/Udacity/CarND-Behavioral-Cloning-P3$ pip3 install eventlet python-socketio flask
+
+AttributeError: module 'importlib._bootstrap' has no attribute 'SourceFileLoader'
+
+Oops, pip install setuptools --upgrade --> setuptools version conflict among socketio and tensorflow
+    fixed: another packet required.
+    
+    
+AttributeError: 'str' object has no attribute 'decode'
+    h5py version was 3.1.0, downgrade to 
+    rom versions: 2.2.1, 2.3.0b1, 2.3.0, 2.3.1, 2.4.0b1, 2.4.0, 2.5.0, 2.6.0, 2.7.0rc2, 2.7.0, 2.7.1, 2.8.0rc1, 2.8.0, 2.9.0rc1, 2.9.0, 2.10.0, 3.0.0rc1, 3.0.0, 3.1.0
+    2.8.0:   ValueError: You are trying to load a weight file containing 6 layers into a model with 0 layers.
+    2.9.0: the same error
+    2.10.0: the same
+    3.0.0:
+    
+Ah, let's upgrade pip - that helps to install the newest Tensorflow
+    yes it helps to load the model file into simulation
+    
+however, the sim does not connect with the script:
+   
+    
+    2020-12-08 23:24:15.085226: I tensorflow/compiler/xla/service/service.cc:176]   StreamExecutor device (0): Host, Default Version
+    NOT RECORDING THIS RUN ...
+    (7283) wsgi starting up on http://0.0.0.0:4567
+    (7283) accepted ('127.0.0.1', 41925)
+    (7283) accepted ('127.0.0.1', 45073)
+    127.0.0.1 - - [08/Dec/2020 23:24:44] "GET /socket.io/?EIO=4&transport=websocket HTTP/1.1" 200 0 29.152994
+    127.0.0.1 - - [08/Dec/2020 23:24:44] "GET /socket.io/?EIO=4&transport=websocket HTTP/1.1" 200 0 4.530740
+
+Why?
+
+
+Okay it seems I need to split the model to two pieces, or even avoid generating the model at al.
+aha, in the workspace the model seems to be working fine.
+Let us also try to use pretrained weights to load into the model.
