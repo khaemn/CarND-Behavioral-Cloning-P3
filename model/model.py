@@ -3,9 +3,15 @@ import cv2
 import numpy as np
 import os.path
 
-from tensorflow.keras.models import Sequential
-from tensorflow.keras.models import load_model
-from tensorflow.keras.layers import Conv2D, AveragePooling2D, MaxPooling2D, Flatten, Dense, Input, Dropout
+try:
+    from tensorflow.keras.models import Sequential
+    from tensorflow.keras.models import load_model
+    from tensorflow.keras.layers import Conv2D, AveragePooling2D, MaxPooling2D, Flatten, Dense, Dropout
+except:
+    from keras.models import Sequential
+    from keras.models import load_model
+    from keras.layers import Conv2D, AveragePooling2D, MaxPooling2D, Flatten, Dense, Dropout
+
 
 PATH_CSV_COLUMN = 0
 ANGLE_CSV_COLUMN = 3
@@ -49,8 +55,7 @@ def load_augmented_train_data(data_folder='../data', log_name='driving_log.csv',
 
 def build_behavioral_model():
     model = Sequential()
-    model.add(Input(shape=IMAGE_SIZE))
-    model.add(AveragePooling2D(pool_size=(3, 3), strides=2, padding="valid"))
+    model.add(AveragePooling2D(input_shape=IMAGE_SIZE, pool_size=(3, 3), strides=2, padding="valid"))
     model.add(Conv2D(8, 3, activation='relu'))
     model.add(MaxPooling2D(pool_size=(2, 2), strides=2, padding="valid"))
     model.add(Dropout(0.2))
