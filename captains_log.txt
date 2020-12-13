@@ -84,3 +84,12 @@ Why?
 Okay it seems I need to split the model to two pieces, or even avoid generating the model at al.
 aha, in the workspace the model seems to be working fine.
 Let us also try to use pretrained weights to load into the model.
+
+====== DEC 13
+
+The old/new keras restoring works fine.
+But the model always shows +13 deg. angle in the sim - why?
+
+best val on my data ~0.017
+
+
