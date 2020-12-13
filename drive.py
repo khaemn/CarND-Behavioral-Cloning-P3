@@ -55,7 +55,6 @@ controller.set_desired(set_speed)
 @sio.on('telemetry')
 def telemetry(sid, data):
     if data:
-        print("DATA!\n")
         # The current steering angle of the car
         steering_angle = data["steering_angle"]
         # The current throttle of the car
@@ -67,8 +66,8 @@ def telemetry(sid, data):
         image = Image.open(BytesIO(base64.b64decode(imgString)))
         image_array = np.asarray(image)
         # Preprocessing
-        image_array = image_array[80:,:,:]
-        image_array = image_array / 255.
+        image_array = image_array[80:140,:,:]  / 255.
+        # Prediction using the network
         steering_angle = float(model.predict(image_array[None, :, :, :], batch_size=1)) - 0.5
 
         throttle = controller.update(float(speed))
@@ -93,7 +92,6 @@ def connect(sid, environ):
 
 
 def send_control(steering_angle, throttle):
-    print("send_control!\n")
     sio.emit(
         "steer",
         data={
