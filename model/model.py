@@ -37,7 +37,7 @@ def load_augmented_train_data(data_folder='../data', log_name='driving_log.csv',
         for img_side in [CENTER_IMG_PATH_CSV_COLUMN, LEFT_IMG_PATH_CSV_COLUMN, RIGHT_IMG_PATH_CSV_COLUMN]:
             source_path = line[img_side]
             current_path = os.path.join(img_path, source_path.split('/')[-1])
-            image = cv2.cvtColor(cv2.imread(current_path)[80:,:,:], cv2.COLOR_BGR2GRAY) / 255.
+            image = cv2.cvtColor(cv2.imread(current_path)[60:140,:,:], cv2.COLOR_BGR2GRAY) / 255.
             images.append(image)
             if (img_side == LEFT_IMG_PATH_CSV_COLUMN):
                 measurement = measurement + steering_correction

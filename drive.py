@@ -68,7 +68,7 @@ def telemetry(sid, data):
         image_array = np.expand_dims(cv2.cvtColor(np.asarray(image), cv2.COLOR_RGB2GRAY), 2)
 
         # Preprocessing
-        image_array = image_array[80:,:,:]  / 255.
+        image_array = image_array[60:140,:,:]  / 255.
         # Prediction using the network
         steering_angle = float(model.predict(image_array[None, :, :, :], batch_size=1)) - 0.5
 

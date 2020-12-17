@@ -452,3 +452,5 @@ retrain using half of the ALL the available data during 50 epochs with batch 64.
     model.add(Dense(1, activation='sigmoid'))
     model.compile(loss='mse', optimizer='adam')
         batch 64, 10 epochs. And image is again the bottom half! (all)
+        
+    and retrained using a better image cropping: [60:140] instead of [80:160] -- more valuable info there.
