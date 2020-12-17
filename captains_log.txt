@@ -478,6 +478,10 @@ retrain using half of the ALL the available data during 50 epochs with batch 64.
     model.add(Dense(1, activation='sigmoid'))
     model.compile(loss='mse', optimizer='adam')
             batch 64, 12 epochs. Enhanced image., steering correction 0.15, smaller dropout
+        bridge and ground passed fine!
+        38k weights - not so much, eh?
+    let it be this, nothing more necessary.
+    yes, 2 loops without problem -- good enough, let it be.
     
     
     
