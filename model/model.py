@@ -17,7 +17,7 @@ CENTER_IMG_PATH_CSV_COLUMN = 0
 LEFT_IMG_PATH_CSV_COLUMN = 1
 RIGHT_IMG_PATH_CSV_COLUMN = 2
 ANGLE_CSV_COLUMN = 3
-IMAGE_SIZE = (60, 320, 1)
+IMAGE_SIZE = (80, 320, 1)
 
 def load_augmented_train_data(data_folder='../data', log_name='driving_log.csv', img_folder='IMG'):
     print("Loading data from {}".format(data_folder))
@@ -37,7 +37,7 @@ def load_augmented_train_data(data_folder='../data', log_name='driving_log.csv',
         for img_side in [CENTER_IMG_PATH_CSV_COLUMN, LEFT_IMG_PATH_CSV_COLUMN, RIGHT_IMG_PATH_CSV_COLUMN]:
             source_path = line[img_side]
             current_path = os.path.join(img_path, source_path.split('/')[-1])
-            image = cv2.cvtColor(cv2.imread(current_path)[80:140,:,:], cv2.COLOR_BGR2GRAY) / 255.
+            image = cv2.cvtColor(cv2.imread(current_path)[80:,:,:], cv2.COLOR_BGR2GRAY) / 255.
             images.append(image)
             if (img_side == LEFT_IMG_PATH_CSV_COLUMN):
                 measurement = measurement + steering_correction
@@ -62,18 +62,17 @@ def load_augmented_train_data(data_folder='../data', log_name='driving_log.csv',
 
 def build_behavioral_model():
     model = Sequential()
-    #model.add(AveragePooling2D(input_shape=IMAGE_SIZE, pool_size=(3, 3), strides=2, padding="valid"))
-    model.add(Conv2D(8, 3, input_shape=IMAGE_SIZE, activation='relu'))
+    model.add(Conv2D(4, 3, input_shape=IMAGE_SIZE, activation='relu'))
     model.add(MaxPooling2D(pool_size=(2, 2), strides=2, padding="valid"))
     model.add(Dropout(0.5))
+    model.add(Conv2D(8, 3, activation='relu'))
+    model.add(MaxPooling2D(pool_size=(2, 2), strides=2, padding="valid"))
     model.add(Conv2D(16, 3, activation='relu'))
-    model.add(MaxPooling2D(pool_size=(2, 2), strides=2, padding="same"))
-    model.add(Conv2D(16, 3, activation='relu'))
-    model.add(MaxPooling2D(pool_size=(2, 2), strides=2, padding="same"))
+    model.add(MaxPooling2D(pool_size=(2, 2), strides=2, padding="valid"))
     model.add(Conv2D(32, 3, activation='relu'))
-    model.add(MaxPooling2D(pool_size=(2, 2), strides=2, padding="same"))
+    model.add(MaxPooling2D(pool_size=(2, 2), strides=2, padding="valid"))
     model.add(Conv2D(32, 3, activation='relu', padding="same"))
-    model.add(MaxPooling2D(pool_size=(2, 2), strides=2, padding="same"))
+    model.add(MaxPooling2D(pool_size=(2, 2), strides=2, padding="valid"))
     model.add(Dropout(0.5))
     model.add(Flatten())
     model.add(Dense(64, activation='relu'))

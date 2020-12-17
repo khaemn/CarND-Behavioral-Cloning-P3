@@ -235,6 +235,8 @@ and added some Dense layers:
     
 python video.py run1    install ffmpeg to the environment    update --fix-missing
 
+sudo apt-get update --fix-missing
+sudo apt-get install ffmpeg
 
 Yes, the pre-recorded data does NOT include the "advanced" challenge. So if I gather more, it could be really useful
 Now added my "Advanced" data to the precollected data 
@@ -427,5 +429,26 @@ retrain using half of the ALL the available data during 50 epochs with batch 64.
     model.add(Dense(1, activation='sigmoid'))
     model.compile(loss='mse', optimizer='adam')
     + D0.5 0.5, batch 400, 10 epochs - mem errors
-    batch 64, 10 epochs: 
-    
+    batch 64, 10 epochs:   (201217-2252-)
+        drives almost fine but strikes a piece of the trace.
+        
+        
+    model = Sequential()
+    model.add(Conv2D(4, 3, input_shape=IMAGE_SIZE, activation='relu'))
+    model.add(MaxPooling2D(pool_size=(2, 2), strides=2, padding="valid"))
+    model.add(Dropout(0.5))
+    model.add(Conv2D(8, 3, activation='relu'))
+    model.add(MaxPooling2D(pool_size=(2, 2), strides=2, padding="valid"))
+    model.add(Conv2D(16, 3, activation='relu'))
+    model.add(MaxPooling2D(pool_size=(2, 2), strides=2, padding="valid"))
+    model.add(Conv2D(32, 3, activation='relu'))
+    model.add(MaxPooling2D(pool_size=(2, 2), strides=2, padding="valid"))
+    model.add(Conv2D(32, 3, activation='relu', padding="same"))
+    model.add(MaxPooling2D(pool_size=(2, 2), strides=2, padding="valid"))
+    model.add(Dropout(0.5))
+    model.add(Flatten())
+    model.add(Dense(64, activation='relu'))
+    model.add(Dense(64, activation='relu'))
+    model.add(Dense(1, activation='sigmoid'))
+    model.compile(loss='mse', optimizer='adam')
+        batch 64, 10 epochs. And image is again the bottom half! (all)
