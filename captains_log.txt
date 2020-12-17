@@ -408,9 +408,6 @@ retrain using half of the ALL the available data during 50 epochs with batch 64.
     let's try larger Dropout == 2x0.5 - dynamics not bad.
     However let's try on smaller batches, as there are a lot of mem errors.
     
-    
-    
-    
     model.add(Conv2D(8, 3, input_shape=IMAGE_SIZE, activation='relu'))
     model.add(MaxPooling2D(pool_size=(2, 2), strides=2, padding="valid"))
     model.add(Dropout(0.5))
@@ -454,3 +451,38 @@ retrain using half of the ALL the available data during 50 epochs with batch 64.
         batch 64, 10 epochs. And image is again the bottom half! (all)
         
     and retrained using a better image cropping: [60:140] instead of [80:160] -- more valuable info there.
+    
+    
+    
+    git config --global user.email "khaemn@gmail.com" && git config --global user.name "Volodymyr Havrylov"
+    
+    the model drives too to the right in "fantastic" mode, but overall movement is ok.
+        no! drives badly.
+        
+        
+    model = Sequential()
+    model.add(AveragePooling2D(input_shape=IMAGE_SIZE, pool_size=(3, 3), strides=2, padding="valid"))
+    model.add(Conv2D(8, 3, activation='relu'))
+    model.add(MaxPooling2D(pool_size=(2, 2), strides=2, padding="valid"))
+    model.add(Dropout(0.2))
+    model.add(Conv2D(16, 3, activation='relu'))
+    model.add(MaxPooling2D(pool_size=(2, 2), strides=2, padding="valid"))
+    model.add(Conv2D(32, 3, activation='relu'))
+    model.add(MaxPooling2D(pool_size=(2, 2), strides=2, padding="valid"))
+    model.add(Conv2D(32, 3, activation='relu', padding="same"))
+    model.add(MaxPooling2D(pool_size=(2, 2), strides=2, padding="valid"))
+    model.add(Dropout(0.2))
+    model.add(Flatten())
+    model.add(Dense(64, activation='relu'))
+    model.add(Dense(64, activation='relu'))
+    model.add(Dense(1, activation='sigmoid'))
+    model.compile(loss='mse', optimizer='adam')
+            batch 64, 12 epochs. Enhanced image., steering correction 0.15, smaller dropout
+    
+    
+    
+    
+    
+    
+    
+    
