@@ -32,7 +32,6 @@ def load_augmented_train_data(data_folder='../data', log_name='driving_log.csv',
     images = []
     measurements = []
     for line in lines[1::2]:
-        #print("Line ", line)
         steering_correction = 0.1
         measurement = float(line[ANGLE_CSV_COLUMN])
         for img_side in [CENTER_IMG_PATH_CSV_COLUMN, LEFT_IMG_PATH_CSV_COLUMN, RIGHT_IMG_PATH_CSV_COLUMN]:
@@ -63,19 +62,19 @@ def load_augmented_train_data(data_folder='../data', log_name='driving_log.csv',
 
 def build_behavioral_model():
     model = Sequential()
-    model.add(AveragePooling2D(input_shape=IMAGE_SIZE, pool_size=(3, 3), strides=2, padding="valid"))
-    #model.add(Conv2D(8, 3, input_shape=IMAGE_SIZE, activation='relu'))
-    #model.add(MaxPooling2D(pool_size=(2, 2), strides=2, padding="valid"))
+    #model.add(AveragePooling2D(input_shape=IMAGE_SIZE, pool_size=(3, 3), strides=2, padding="valid"))
     model.add(Conv2D(8, 3, input_shape=IMAGE_SIZE, activation='relu'))
+    model.add(MaxPooling2D(pool_size=(2, 2), strides=2, padding="valid"))
+    model.add(Dropout(0.5))
+    model.add(Conv2D(16, 3, activation='relu'))
     model.add(MaxPooling2D(pool_size=(2, 2), strides=2, padding="same"))
-    model.add(Dropout(0.15))
     model.add(Conv2D(16, 3, activation='relu'))
     model.add(MaxPooling2D(pool_size=(2, 2), strides=2, padding="same"))
     model.add(Conv2D(32, 3, activation='relu'))
     model.add(MaxPooling2D(pool_size=(2, 2), strides=2, padding="same"))
-    model.add(Conv2D(64, 3, activation='relu', padding="same"))
+    model.add(Conv2D(32, 3, activation='relu', padding="same"))
     model.add(MaxPooling2D(pool_size=(2, 2), strides=2, padding="same"))
-    model.add(Dropout(0.2))
+    model.add(Dropout(0.5))
     model.add(Flatten())
     model.add(Dense(64, activation='relu'))
     model.add(Dense(64, activation='relu'))
@@ -91,7 +90,7 @@ if __name__=="__main__":
 
     X_train, y_train = load_augmented_train_data()
     print("X_train contains {} samples".format(len(X_train)))
-    model.fit(X_train, y_train, validation_split=0.2, shuffle=True, epochs=30, batch_size=8)
+    model.fit(X_train, y_train, validation_split=0.2, shuffle=True, epochs=10, batch_size=64)
 
     model.save('saved_model.h5')
     model.save_weights('saved_weights.h5')

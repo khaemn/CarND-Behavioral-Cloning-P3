@@ -12,6 +12,7 @@ from PIL import Image
 from flask import Flask
 from io import BytesIO
 import h5py
+import cv2
 
 try:
     from tensorflow.keras.models import load_model
@@ -64,7 +65,8 @@ def telemetry(sid, data):
         # The current image from the center camera of the car
         imgString = data["image"]
         image = Image.open(BytesIO(base64.b64decode(imgString)))
-        image_array = np.asarray(image)
+        image_array = np.expand_dims(cv2.cvtColor(np.asarray(image), cv2.COLOR_RGB2GRAY), 2)
+
         # Preprocessing
         image_array = image_array[80:140,:,:]  / 255.
         # Prediction using the network
@@ -127,6 +129,7 @@ if __name__ == '__main__':
               ', but the model was built using ', model_version)
 
     model = load_model(args.model)
+    model.summary()
 
     if args.image_folder != '':
         print("Creating image folder at {}".format(args.image_folder))

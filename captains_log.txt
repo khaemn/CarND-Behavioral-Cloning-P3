@@ -228,8 +228,204 @@ and added some Dense layers:
         Trainable params: 69,633
         Non-trainable params: 0
 
+        2411/2411 [==============================] - 10s 4ms/step - loss: 0.0087 - val_loss: 0.0114
+
+    ^^ checking in the field...
+    
+    
+python video.py run1    install ffmpeg to the environment    update --fix-missing
 
 
+Yes, the pre-recorded data does NOT include the "advanced" challenge. So if I gather more, it could be really useful
+Now added my "Advanced" data to the precollected data 
 
 
+        Layer (type)                 Output Shape              Param #   
+        =================================================================
+        average_pooling2d (AveragePo (None, 30, 160, 1)        0         
+        _________________________________________________________________
+        conv2d (Conv2D)              (None, 28, 158, 8)        80        
+        _________________________________________________________________
+        max_pooling2d (MaxPooling2D) (None, 14, 79, 8)         0         
+        _________________________________________________________________
+        dropout (Dropout)            (None, 14, 79, 8)         0         
+        _________________________________________________________________
+        conv2d_1 (Conv2D)            (None, 12, 77, 16)        1168      
+        _________________________________________________________________
+        max_pooling2d_1 (MaxPooling2 (None, 6, 39, 16)         0         
+        _________________________________________________________________
+        conv2d_2 (Conv2D)            (None, 4, 37, 32)         4640      
+        _________________________________________________________________
+        max_pooling2d_2 (MaxPooling2 (None, 2, 19, 32)         0         
+        _________________________________________________________________
+        conv2d_3 (Conv2D)            (None, 2, 19, 64)         18496     
+        _________________________________________________________________
+        max_pooling2d_3 (MaxPooling2 (None, 1, 10, 64)         0         
+        _________________________________________________________________
+        dropout_1 (Dropout)          (None, 1, 10, 64)         0         
+        _________________________________________________________________
+        flatten (Flatten)            (None, 640)               0         
+        _________________________________________________________________
+        dense (Dense)                (None, 64)                41024     
+        _________________________________________________________________
+        dense_1 (Dense)              (None, 64)                4160      
+        _________________________________________________________________
+        dense_2 (Dense)              (None, 1)                 65        
+        =================================================================
+        Total params: 69,633
+        Trainable params: 69,633
 
+        model = Sequential()
+        model.add(AveragePooling2D(input_shape=IMAGE_SIZE, pool_size=(2, 2), strides=2, padding="valid"))
+        model.add(Conv2D(8, 3, input_shape=IMAGE_SIZE, activation='relu'))
+        model.add(MaxPooling2D(pool_size=(2, 2), strides=2, padding="same"))
+        model.add(Dropout(0.25))
+        model.add(Conv2D(16, 3, activation='relu'))
+        model.add(MaxPooling2D(pool_size=(2, 2), strides=2, padding="same"))
+        model.add(Conv2D(32, 3, activation='relu'))
+        model.add(MaxPooling2D(pool_size=(2, 2), strides=2, padding="same"))
+        model.add(Conv2D(64, 3, activation='relu', padding="same"))
+        model.add(MaxPooling2D(pool_size=(2, 2), strides=2, padding="same"))
+        model.add(Dropout(0.2))
+        model.add(Flatten())
+        model.add(Dense(64, activation='relu'))
+        model.add(Dense(64, activation='relu'))
+        model.add(Dense(1, activation='sigmoid'))
+        
+    training on batch 128, 22GB RAM occupied
+    it crashes!
+    
+retrain using half of the ALL the available data during 50 epochs with batch 64.:
+
+        Model: "sequential"
+        _________________________________________________________________
+        Layer (type)                 Output Shape              Param #   
+        =================================================================
+        average_pooling2d (AveragePo (None, 29, 159, 1)        0         
+        _________________________________________________________________
+        conv2d (Conv2D)              (None, 27, 157, 8)        80        
+        _________________________________________________________________
+        max_pooling2d (MaxPooling2D) (None, 14, 79, 8)         0         
+        _________________________________________________________________
+        dropout (Dropout)            (None, 14, 79, 8)         0         
+        _________________________________________________________________
+        conv2d_1 (Conv2D)            (None, 12, 77, 16)        1168      
+        _________________________________________________________________
+        max_pooling2d_1 (MaxPooling2 (None, 6, 39, 16)         0         
+        _________________________________________________________________
+        conv2d_2 (Conv2D)            (None, 4, 37, 32)         4640      
+        _________________________________________________________________
+        max_pooling2d_2 (MaxPooling2 (None, 2, 19, 32)         0         
+        _________________________________________________________________
+        conv2d_3 (Conv2D)            (None, 2, 19, 64)         18496     
+        _________________________________________________________________
+        max_pooling2d_3 (MaxPooling2 (None, 1, 10, 64)         0         
+        _________________________________________________________________
+        dropout_1 (Dropout)          (None, 1, 10, 64)         0         
+        _________________________________________________________________
+        flatten (Flatten)            (None, 640)               0         
+        _________________________________________________________________
+        dense (Dense)                (None, 64)                41024     
+        _________________________________________________________________
+        dense_1 (Dense)              (None, 64)                4160      
+        _________________________________________________________________
+        dense_2 (Dense)              (None, 1)                 65        
+        =================================================================
+        Total params: 69,633
+        Trainable params: 69,633
+        Non-trainable params: 0
+
+        model = Sequential()
+        model.add(AveragePooling2D(input_shape=IMAGE_SIZE, pool_size=(3, 3), strides=2, padding="valid"))
+        model.add(Conv2D(8, 3, input_shape=IMAGE_SIZE, activation='relu'))
+        model.add(MaxPooling2D(pool_size=(2, 2), strides=2, padding="same"))
+        model.add(Dropout(0.25))
+        model.add(Conv2D(16, 3, activation='relu'))
+        model.add(MaxPooling2D(pool_size=(2, 2), strides=2, padding="same"))
+        model.add(Conv2D(32, 3, activation='relu'))
+        model.add(MaxPooling2D(pool_size=(2, 2), strides=2, padding="same"))
+        model.add(Conv2D(64, 3, activation='relu', padding="same"))
+        model.add(MaxPooling2D(pool_size=(2, 2), strides=2, padding="same"))
+        model.add(Dropout(0.2))
+        model.add(Flatten())
+        model.add(Dense(64, activation='relu'))
+        model.add(Dense(64, activation='relu'))
+        model.add(Dense(1, activation='sigmoid'))
+    on bsize 64:
+    Epoch 50/50
+    404/404 [==============================] - 7s 18ms/step - loss: 0.0100 - val_loss: 0.0169
+
+
+    41k weights:
+  model = Sequential()
+    model.add(AveragePooling2D(input_shape=IMAGE_SIZE, pool_size=(3, 3), strides=2, padding="valid"))
+    #model.add(Conv2D(8, 3, input_shape=IMAGE_SIZE, activation='relu'))
+    #model.add(MaxPooling2D(pool_size=(2, 2), strides=2, padding="valid"))
+    model.add(Conv2D(16, 3, input_shape=IMAGE_SIZE, activation='relu'))
+    model.add(MaxPooling2D(pool_size=(2, 2), strides=2, padding="same"))
+    model.add(Dropout(0.2))
+    model.add(Conv2D(16, 3, activation='relu'))
+    model.add(MaxPooling2D(pool_size=(2, 2), strides=2, padding="same"))
+    model.add(Conv2D(32, 3, activation='relu'))
+    model.add(MaxPooling2D(pool_size=(2, 2), strides=2, padding="same"))
+    model.add(Conv2D(32, 3, activation='relu', padding="same"))
+    model.add(MaxPooling2D(pool_size=(2, 2), strides=2, padding="same"))
+    model.add(Dropout(0.2))
+    model.add(Flatten())
+    model.add(Dense(64, activation='relu'))
+    model.add(Dense(64, activation='relu'))
+    model.add(Dense(1, activation='sigmoid'))
+    model.compile(loss='mse', optimizer='adam')
+    
+    val loss falls more stable but only first 3-4 epochs (batch==200)
+    
+    
+    
+    model = Sequential()
+    #model.add(AveragePooling2D(input_shape=IMAGE_SIZE, pool_size=(3, 3), strides=2, padding="valid"))
+    model.add(Conv2D(8, 3, input_shape=IMAGE_SIZE, activation='relu'))
+    model.add(MaxPooling2D(pool_size=(2, 2), strides=2, padding="valid"))
+    model.add(Conv2D(16, 3, input_shape=IMAGE_SIZE, activation='relu'))
+    model.add(MaxPooling2D(pool_size=(2, 2), strides=2, padding="same"))
+    model.add(Dropout(0.2))
+    model.add(Conv2D(16, 3, activation='relu'))
+    model.add(MaxPooling2D(pool_size=(2, 2), strides=2, padding="same"))
+    model.add(Conv2D(32, 3, activation='relu'))
+    model.add(MaxPooling2D(pool_size=(2, 2), strides=2, padding="same"))
+    model.add(Conv2D(32, 3, activation='relu', padding="same"))
+    model.add(MaxPooling2D(pool_size=(2, 2), strides=2, padding="same"))
+    model.add(Dropout(0.2))
+    model.add(Flatten())
+    model.add(Dense(64, activation='relu'))
+    model.add(Dense(64, activation='relu'))
+    model.add(Dense(1, activation='sigmoid'))
+    model.compile(loss='mse', optimizer='adam')
+    + batch size 512
+        valloss jumps
+        
+    let's try larger Dropout == 2x0.5 - dynamics not bad.
+    However let's try on smaller batches, as there are a lot of mem errors.
+    
+    
+    
+    
+    model.add(Conv2D(8, 3, input_shape=IMAGE_SIZE, activation='relu'))
+    model.add(MaxPooling2D(pool_size=(2, 2), strides=2, padding="valid"))
+    model.add(Dropout(0.5))
+    model.add(Conv2D(16, 3, activation='relu'))
+    model.add(MaxPooling2D(pool_size=(2, 2), strides=2, padding="same"))
+    model.add(Conv2D(16, 3, activation='relu'))
+    model.add(MaxPooling2D(pool_size=(2, 2), strides=2, padding="same"))
+    model.add(Conv2D(32, 3, activation='relu'))
+    model.add(MaxPooling2D(pool_size=(2, 2), strides=2, padding="same"))
+    model.add(Conv2D(32, 3, activation='relu', padding="same"))
+    model.add(MaxPooling2D(pool_size=(2, 2), strides=2, padding="same"))
+    model.add(Dropout(0.5))
+    model.add(Flatten())
+    model.add(Dense(64, activation='relu'))
+    model.add(Dense(64, activation='relu'))
+    model.add(Dense(1, activation='sigmoid'))
+    model.compile(loss='mse', optimizer='adam')
+    + D0.5 0.5, batch 400, 10 epochs - mem errors
+    batch 64, 10 epochs: 
+    
