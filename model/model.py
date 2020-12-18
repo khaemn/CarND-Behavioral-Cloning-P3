@@ -9,6 +9,8 @@ try:
     from tensorflow.keras.models import Sequential
     from tensorflow.keras.models import load_model
     from tensorflow.keras.layers import Conv2D, AveragePooling2D, MaxPooling2D, Flatten, Dense, Dropout
+    from tensorflow.keras.utils import plot_model
+    PLOT_MODEL=True
 except:
     from keras.models import Sequential
     from keras.models import load_model
@@ -87,7 +89,7 @@ def load_augmented_train_data(data_folder='../data',
     
     assert(X_train[0].shape == IMAGE_SIZE)
     assert(len(X_train) == len(y_train))
-    assert(y_train[0].shape = [1])
+    assert(y_train[0].shape == [1])
     
     print("X_train contains {} samples".format(len(X_train)))
     return X_train, y_train
@@ -136,7 +138,10 @@ def build_behavioral_model():
 if __name__=="__main__":
     model = build_behavioral_model()
     model.summary()
-
+    
+    if (PLOT_MODEL):
+        plot_model(model, to_file='model_plot.png', show_shapes=True, show_layer_names=True)
+    
     X_train, y_train = load_augmented_train_data()
     print("X_train contains {} samples".format(len(X_train)))
     
