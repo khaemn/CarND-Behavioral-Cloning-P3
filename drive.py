@@ -11,11 +11,16 @@ import eventlet.wsgi
 from PIL import Image
 from flask import Flask
 from io import BytesIO
-
-from keras.models import load_model
 import h5py
-from keras import __version__ as keras_version
+import cv2
 
+try:
+    from tensorflow.keras.models import load_model
+    from tensorflow.keras import __version__ as keras_version
+except:
+    from keras.models import load_model
+    from keras import __version__ as keras_version
+    
 sio = socketio.Server()
 app = Flask(__name__)
 model = None
@@ -60,8 +65,12 @@ def telemetry(sid, data):
         # The current image from the center camera of the car
         imgString = data["image"]
         image = Image.open(BytesIO(base64.b64decode(imgString)))
-        image_array = np.asarray(image)
-        steering_angle = float(model.predict(image_array[None, :, :, :], batch_size=1))
+        image_array = np.expand_dims(cv2.cvtColor(np.asarray(image), cv2.COLOR_RGB2GRAY), 2)
+
+        # Preprocessing
+        image_array = image_array[60:140,:,:]  / 255.
+        # Prediction using the network
+        steering_angle = float(model.predict(image_array[None, :, :, :], batch_size=1)) - 0.5
 
         throttle = controller.update(float(speed))
 
@@ -120,6 +129,7 @@ if __name__ == '__main__':
               ', but the model was built using ', model_version)
 
     model = load_model(args.model)
+    model.summary()
 
     if args.image_folder != '':
         print("Creating image folder at {}".format(args.image_folder))
