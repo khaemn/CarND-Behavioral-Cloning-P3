@@ -485,8 +485,15 @@ retrain using half of the ALL the available data during 50 epochs with batch 64.
     
     
     
+    model visualization
+        pip install pydot graphviz
+        sudo apt-get install graphviz
+    https://stackoverflow.com/questions/47605558/importerror-failed-to-import-pydot-you-must-install-pydot-and-graphviz-for-py
     
     
     
-    
+TODO:
+
+*  make a model.h5 from weights, and also make a restored model.
+    I think I can juist convert only a model.h5 to the old-Keras format, but also present the weights.
     
