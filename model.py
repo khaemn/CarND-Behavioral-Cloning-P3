@@ -2,6 +2,9 @@ import csv
 import cv2
 import numpy as np
 import os.path
+import sklearn
+import math
+from sklearn.model_selection import train_test_split
 
 # In the workshop environment it is OK to have old Keras as a separate package,
 # but in any modern setup Keras is already a part of Tensorflow.
@@ -28,71 +31,67 @@ IMAGE_SIZE = (80, 320, 1)
 # to 140th pixel. The most part of top of the image and also botom 20
 # pixels do not bring in any useful visual information, thus cropped out.
 
-def load_augmented_train_data(data_folder='../data',
-                              log_name='driving_log.csv',
-                              img_folder='IMG'):
-    ''' Reads a driving log CSV with paths to images,
-    then loads all the mentioned images, fipping each
-    to achieve some data augmentation '''
-    
+def read_data_log(data_folder='data', log_name='driving_log.csv',):
     print("Loading data from {}".format(data_folder))
-    lines = []
+    records = []
     log_filename = os.path.join(data_folder, log_name)
     with open(log_filename) as csvfile:
         reader = csv.reader(csvfile)
+        next(reader) # Skip the first line, as it is a header
         for line in reader:
-            lines.append(line)
+            records.append(line)
     print("Data log at {} contains {} records"
-            .format(log_filename, len(lines)))
-    img_path = os.path.join(data_folder, img_folder)
-    images = []
-    measurements = []
-    for line in lines:
-        measurement = float(line[ANGLE_CSV_COLUMN])
-        # Note: as all the image are loaded into memory,
-        # and also augmentation multiplies their volume twice,
-        # I use datasets about 10k images. Larger datasets
-        # could require refactring the data loader as Keras generator.
-        for img_side in [CENTER_IMG_PATH_CSV_COLUMN,
-                         LEFT_IMG_PATH_CSV_COLUMN,
-                         RIGHT_IMG_PATH_CSV_COLUMN]:
-            source_path = line[img_side]
-            current_path = os.path.join(img_path,
-                                        source_path.split('/')[-1])
-            image = cv2.imread(current_path)            # load
-            image = image[60:140,:,:]                   # crop
-            image = cv2.cvtColor(image, 
-                                 cv2.COLOR_BGR2GRAY)    # to grayscale
-            image = image / 255.                        # to range 0 .. 1.0
-            steering_correction = 0.15
-            # For images from the left camera the car should drive more to the
-            # right, and vice versa from images from right camera. Center
-            # camera images do not require correction.
-            if (img_side == LEFT_IMG_PATH_CSV_COLUMN):
-                measurement = measurement + steering_correction
-            if (img_side == RIGHT_IMG_PATH_CSV_COLUMN):
-                measurement = measurement - steering_correction
-            # Append this image and corresponding steering angle
-            images.append(image)
-            measurements.append(measurement + 0.5)
-            # Naiive augmentation via flipping both the image and steering angle:
-            aug_image = cv2.flip(image, 1)
-            aug_measurement = -1.0 * measurement
-            # Append this image and corresponding steering angle
-            images.append(aug_image)
-            measurements.append(aug_measurement + 0.5)
-        
-    assert(len(images) == len(measurements))
+            .format(log_filename, len(records)))
+    return records
 
-    X_train = np.expand_dims(np.array(images), 3)
-    y_train = np.array(measurements)
-    
-    assert(X_train[0].shape == IMAGE_SIZE)
-    assert(len(X_train) == len(y_train))
-    assert(y_train[0].shape == [1])
-    
-    print("X_train contains {} samples".format(len(X_train)))
-    return X_train, y_train
+
+def generator(input_samples, img_path='data/IMG', batch_size=32):
+    num_samples = len(input_samples)
+    while 1: # Loop forever so the generator never terminates
+        samples = sklearn.utils.shuffle(input_samples)
+        for offset in range(0, num_samples, batch_size):
+            batch_samples = samples[offset:offset+batch_size]
+            images = []
+            angles = []
+            for batch_sample in batch_samples:
+                measurement = float(batch_sample[ANGLE_CSV_COLUMN])
+                for img_side in [CENTER_IMG_PATH_CSV_COLUMN,
+                                 LEFT_IMG_PATH_CSV_COLUMN,
+                                 RIGHT_IMG_PATH_CSV_COLUMN]:
+                    source_path = batch_sample[img_side]
+                    current_path = os.path.join(img_path,
+                                                source_path.split('/')[-1])
+                    image = cv2.imread(current_path)            # load
+                    image = image[60:140,:,:]                   # crop to only see section with road
+                    image = cv2.cvtColor(image, 
+                                         cv2.COLOR_BGR2GRAY)    # to grayscale
+                    image = image / 255.                        # to range 0 .. 1.0
+                    steering_correction = 0.25
+                    # For images from the left camera the car should drive more to the
+                    # right, and vice versa from images from right camera. Center
+                    # camera images do not require correction.
+                    if (img_side == LEFT_IMG_PATH_CSV_COLUMN):
+                        measurement = measurement + steering_correction
+                    if (img_side == RIGHT_IMG_PATH_CSV_COLUMN):
+                        measurement = measurement - steering_correction
+                    # Append this image and corresponding steering angle
+                    images.append(image)
+                    angles.append(measurement + 0.5)
+                    # Naiive augmentation via flipping both the image and steering angle:
+                    aug_image = cv2.flip(image, 1)
+                    aug_measurement = -1.0 * measurement
+                    # Append this image and corresponding steering angle
+                    images.append(aug_image)
+                    angles.append(aug_measurement + 0.5)
+            assert(len(images) == len(angles))
+            X_train = np.expand_dims(np.array(images), 3)
+            y_train = np.array(angles)
+            X_train, y_train = sklearn.utils.shuffle(X_train, y_train)
+            assert(X_train[0].shape == IMAGE_SIZE)
+            assert(len(X_train) == len(y_train))
+            assert(y_train[0].shape == [1])
+            yield X_train, y_train
+
 
 def build_behavioral_model():
     ''' Builds a Keras Sequential model with necessary architecture '''
@@ -109,7 +108,7 @@ def build_behavioral_model():
     # seems the most common solution among small conv nets. 
     model.add(Conv2D(8, 3, activation='relu'))
     model.add(MaxPooling2D(pool_size=(2, 2), strides=2, padding="valid"))
-    model.add(Dropout(0.2))
+    model.add(Dropout(0.25))
 
     model.add(Conv2D(16, 3, activation='relu'))
     model.add(MaxPooling2D(pool_size=(2, 2), strides=2, padding="valid"))
@@ -120,7 +119,7 @@ def build_behavioral_model():
     model.add(Conv2D(32, 3, activation='relu', padding="same"))
     model.add(MaxPooling2D(pool_size=(2, 2), strides=2, padding="valid"))
 
-    model.add(Dropout(0.2))
+    model.add(Dropout(0.25))
     model.add(Flatten())
     
     # Two dense layer to make decisions and the output neuron.
@@ -141,17 +140,22 @@ if __name__=="__main__":
     
     if (PLOT_MODEL):
         plot_model(model, to_file='model_plot.png', show_shapes=True, show_layer_names=True)
+        
+    samples = read_data_log()
+    train_samples, validation_samples = train_test_split(samples, test_size=0.2)
     
-    X_train, y_train = load_augmented_train_data()
-    print("X_train contains {} samples".format(len(X_train)))
+    batch_size = 8
+    
+    train_generator = generator(train_samples, batch_size=batch_size)
+    validation_generator = generator(validation_samples, batch_size=batch_size)
     
     # Batch size and number of epochs can be adjusted.
     # The parameters below are based on some local experiments.
-    model.fit(X_train, y_train,
-              validation_split=0.2,
-              shuffle=True,
-              epochs=12,
-              batch_size=64)
+    model.fit_generator(train_generator, \
+            steps_per_epoch=math.ceil(len(train_samples)/batch_size), \
+            validation_data=validation_generator, \
+            validation_steps=math.ceil(len(validation_samples)/batch_size), \
+            epochs=15, verbose=1)
 
     # Due to different Keras versions on a training machine and at the
     # Udacity workspace, it is impossible to save and load the whole
@@ -160,3 +164,4 @@ if __name__=="__main__":
     # to just re-create the model and then load pretrained weights.
     # See `restore_weights_to_model.py` for details.
     model.save_weights('saved_weights.h5')
+    model.save('saved_model.h5')
