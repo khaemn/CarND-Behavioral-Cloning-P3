@@ -1139,8 +1139,42 @@ retrain with early stopping at patience 3
     
     badly drives, rly. let's retrain with more kernels
         but on the same data.
+        
+        
+        model.add(Conv2D(8, 3, input_shape=IMAGE_SIZE, activation='relu'))
+    model.add(MaxPooling2D(pool_size=(2, 2), strides=2, padding="valid"))
+    model.add(Dropout(0.5))
     
+    model.add(Conv2D(16, 3, activation='relu'))
+    model.add(MaxPooling2D(pool_size=(2, 2), strides=2, padding="valid"))
+
+    model.add(Conv2D(24, 3, activation='relu'))
+    model.add(MaxPooling2D(pool_size=(2, 2), strides=2, padding="valid"))
+
+    model.add(Conv2D(48, 3, activation='relu'))
+    model.add(MaxPooling2D(pool_size=(2, 2), strides=2, padding="valid"))
+
+    model.add(Conv2D(64, 3, activation='relu', padding="same"))
+    model.add(MaxPooling2D(pool_size=(2, 2), strides=2, padding="valid"))
+
+    model.add(Flatten())
+    model.add(Dropout(0.25))
     
+    # Dense layers to make decisions and the output neuron.
+    model.add(Dense(64, activation='sigmoid'))
+    model.add(Dense(64, activation='sigmoid'))
+    # The output is sigmoid with range 0..1, but then the steering angle is
+    # converted to a real one by subtracting 0.5.
+    model.add(Dense(1, activation='sigmoid'))
+    
+    retrain on whole data, but
+            and using a non-zero frames for augmentation.
+    drives well.
+        try another speed? 15? works fine!
+            25 mph works fine too!
+        try another track?
+            fails.
+    however, on 9 and 25 mph works fine!
     
     
     
