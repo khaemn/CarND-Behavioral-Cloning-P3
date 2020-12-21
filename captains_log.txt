@@ -491,14 +491,12 @@ retrain using half of the ALL the available data during 50 epochs with batch 64.
     https://stackoverflow.com/questions/47605558/importerror-failed-to-import-pydot-you-must-install-pydot-and-graphviz-for-py
     
     
-    
-TODO:
 
 ++  make a model.h5 from weights, and also make a restored model.
     I think I can juist convert only a model.h5 to the old-Keras format, but also present the weights.
     
     
-*  use Generators to load files -- otherwise it contradicts the Rubric. :(
+++  use Generators to load files -- otherwise it contradicts the Rubric. :(
 
 
 
@@ -936,3 +934,205 @@ Architecture cahnged, return to full-rgb
     Now it passes the main track. RGB? New data? WHat has helped?..
     it passes the hol ring - ok.
 
+    fails on advanced track but not from the very start.
+
+
+https://machinelearningmastery.com/how-to-stop-training-deep-neural-networks-at-the-right-time-using-early-stopping/
+
+retrain with early stopping at patience 3
+
+    removed each 2nd pixel (irrelevant)
+        and retrain on 1//10 of the dataset.
+        
+    the val_loss curve is VERY noisy, while the loss falls pretty fine. Underfitting? Not enough weights?
+    
+        more weights - better val_loss curve
+        
+        
+        
+        
+        model.add(Conv2D(12, 3, input_shape=IMAGE_SIZE, activation='relu'))
+    model.add(MaxPooling2D(pool_size=(2, 2), strides=2, padding="valid"))
+    model.add(Dropout(0.2))
+    
+    model.add(Conv2D(16, 3, activation='relu'))
+    model.add(MaxPooling2D(pool_size=(2, 2), strides=2, padding="valid"))
+
+    model.add(Conv2D(24, 3, activation='relu'))
+    model.add(MaxPooling2D(pool_size=(2, 2), strides=2, padding="valid"))
+
+    model.add(Conv2D(32, 3, activation='relu'))
+    model.add(MaxPooling2D(pool_size=(2, 2), strides=2, padding="valid"))
+
+    model.add(Conv2D(48, 3, activation='relu', padding="same"))
+    model.add(MaxPooling2D(pool_size=(2, 2), strides=2, padding="valid"))
+
+    model.add(Dropout(0.1))
+    model.add(Flatten())
+    
+    # Two dense layer to make decisions and the output neuron.
+    # One layer has driven worse than two.
+    model.add(Dense(96, activation='relu'))
+    model.add(Dense(96, activation='relu'))
+    # The output is sigmoid with range 0..1, but then the steering angle is
+    # converted to a real one by subtracting 0.5.
+    model.add(Dense(1, activation='sigmoid'))
+    
+    
+    ---- added more conv layers to the first chunks - batch failed. bsize to 32 (*6)
+        pretrain on 1//50
+        
+    may be Dense must be Sigmoids?
+    
+    ---- no dropout at all (!), all Denses are Sigmoids.
+        -- good dropping curve!
+    
+    ---- D0.25 + D0.2, sigmoids, bsize 32*6
+        well, the cuve was actually quite not bad.
+        
+        
+    ---- D0.25 + D0.2, sigmoids, bsize 64*6, 1//20 dataset
+        dynamics not bad, but val_loss is VERY noisy
+        the same on batch 8?
+            no improvement.
+            
+    model.add(Conv2D(12, 3, input_shape=IMAGE_SIZE, activation='relu'))
+    model.add(MaxPooling2D(pool_size=(2, 2), strides=2, padding="valid"))
+    model.add(Dropout(0.25))
+    
+    model.add(Conv2D(16, 3, activation='relu'))
+    model.add(MaxPooling2D(pool_size=(2, 2), strides=2, padding="valid"))
+
+    model.add(Conv2D(24, 3, activation='relu'))
+    model.add(MaxPooling2D(pool_size=(2, 2), strides=2, padding="valid"))
+
+    model.add(Conv2D(32, 3, activation='relu'))
+    model.add(MaxPooling2D(pool_size=(2, 2), strides=2, padding="valid"))
+
+    model.add(Conv2D(48, 3, activation='relu', padding="same"))
+    model.add(MaxPooling2D(pool_size=(2, 2), strides=2, padding="valid"))
+
+    model.add(Flatten())
+    model.add(Dropout(0.2))
+    
+    # Two dense layer to make decisions and the output neuron.
+    # One layer has driven worse than two.
+    model.add(Dense(64, activation='sigmoid'))
+    model.add(Dense(64, activation='sigmoid'))
+    model.add(Dense(64, activation='sigmoid'))
+    # The output is sigmoid with range 0..1, but then the steering angle is
+    # converted to a real one by subtracting 0.5.
+    model.add(Dense(1, activation='sigmoid'))
+    model.compile(loss='mse', optimizer='adam', metrics=[
+        metrics.MeanSquaredError(),
+    ])
+       (47k weights !)
+       
+            val_loss min ~0.03 -- not so good.
+    + MUCH more Conv filters
+     (140K weights)
+     
+     model.add(Conv2D(12, 3, input_shape=IMAGE_SIZE, activation='relu'))
+    model.add(MaxPooling2D(pool_size=(2, 2), strides=2, padding="valid"))
+    model.add(Dropout(0.25))
+    
+    model.add(Conv2D(16, 3, activation='relu'))
+    model.add(MaxPooling2D(pool_size=(2, 2), strides=2, padding="valid"))
+
+    model.add(Conv2D(32, 3, activation='relu'))
+    model.add(MaxPooling2D(pool_size=(2, 2), strides=2, padding="valid"))
+
+    model.add(Conv2D(64, 3, activation='relu'))
+    model.add(MaxPooling2D(pool_size=(2, 2), strides=2, padding="valid"))
+
+    model.add(Conv2D(128, 3, activation='relu', padding="same"))
+    model.add(MaxPooling2D(pool_size=(2, 2), strides=2, padding="valid"))
+
+    model.add(Flatten())
+    model.add(Dropout(0.2))
+    
+    # Dense layers to make decisions and the output neuron.
+    model.add(Dense(64, activation='sigmoid'))
+    model.add(Dense(64, activation='sigmoid'))
+    model.add(Dense(64, activation='sigmoid'))
+    # The output is sigmoid with range 0..1, but then the steering angle is
+    # converted to a real one by subtracting 0.5.
+    model.add(Dense(1, activation='sigmoid'))
+    
+    
+        ...... converges way faster (almost immediately) to 0.03
+    I guess the problem might be with the data itself.
+    let's do it one more time with dropout 0.5 and then go collect more data.
+    
+        yes, it seems the issue is with the data, not with the model. Go collect more.
+            with more data: drops really fast, but still is about 0.03.
+        
+        model.add(Conv2D(8, 3, input_shape=IMAGE_SIZE, activation='relu'))
+    model.add(MaxPooling2D(pool_size=(2, 2), strides=2, padding="valid"))
+    model.add(Dropout(0.5))
+    
+    model.add(Conv2D(12, 3, activation='relu'))
+    model.add(MaxPooling2D(pool_size=(2, 2), strides=2, padding="valid"))
+
+    model.add(Conv2D(16, 3, activation='relu'))
+    model.add(MaxPooling2D(pool_size=(2, 2), strides=2, padding="valid"))
+
+    model.add(Conv2D(32, 3, activation='relu'))
+    model.add(MaxPooling2D(pool_size=(2, 2), strides=2, padding="valid"))
+
+    model.add(Conv2D(64, 3, activation='relu', padding="same"))
+    model.add(MaxPooling2D(pool_size=(2, 2), strides=2, padding="valid"))
+
+    model.add(Flatten())
+    model.add(Dropout(0.5))
+    
+    # Dense layers to make decisions and the output neuron.
+    model.add(Dense(64, activation='sigmoid'))
+    model.add(Dense(64, activation='sigmoid'))
+    # The output is sigmoid with range 0..1, but then the steering angle is
+    # converted to a real one by subtracting 0.5.
+    model.add(Dense(1, activation='sigmoid'))
+        retrain on 1//20 with bszie 16
+            works the same.
+    retrain ^^ on 1//5 with bsize 16
+        
+    what if renormalize to positive numbers?..
+        almost no difference, jsut the math looks neater.
+            so let it be this way.
+            
+            
+        model.add(Conv2D(8, 3, input_shape=IMAGE_SIZE, activation='relu'))
+        model.add(MaxPooling2D(pool_size=(2, 2), strides=2, padding="valid"))
+        model.add(Dropout(0.5))
+        
+        model.add(Conv2D(12, 3, activation='relu'))
+        model.add(MaxPooling2D(pool_size=(2, 2), strides=2, padding="valid"))
+
+        model.add(Conv2D(16, 3, activation='relu'))
+        model.add(MaxPooling2D(pool_size=(2, 2), strides=2, padding="valid"))
+
+        model.add(Conv2D(32, 3, activation='relu'))
+        model.add(MaxPooling2D(pool_size=(2, 2), strides=2, padding="valid"))
+
+        model.add(Conv2D(64, 3, activation='relu', padding="same"))
+        model.add(MaxPooling2D(pool_size=(2, 2), strides=2, padding="valid"))
+
+        model.add(Flatten())
+        model.add(Dropout(0.5))
+        
+        # Dense layers to make decisions and the output neuron.
+        model.add(Dense(64, activation='sigmoid'))
+        model.add(Dense(64, activation='sigmoid'))
+        # The output is sigmoid with range 0..1, but then the steering angle is
+        # converted to a real one by subtracting 0.5.
+        model.add(Dense(1, activation='sigmoid'))
+    bsize 8, patience=5
+    trained on 1//5, new model again. Can the dropout be too high? Does it affect the val loss?
+    
+    
+        Hey, what if retrain on non-zero cases? Zero is actually almost non-informative...
+            with batch==8 it is not working, so used batch == 18
+                not bad dynamic. retried on 1//10, with bsize 16
+    data thresholding: if angle is 0, skip side pictures.
+    
+    batch 32, 1//10 of the data, curve looks fine. Let's drive it.

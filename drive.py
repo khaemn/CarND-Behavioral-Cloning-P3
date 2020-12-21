@@ -68,7 +68,7 @@ def telemetry(sid, data):
         image_array = np.asarray(image)
 
         # Preprocessing
-        image_array = (image_array[60:140,:,:]  / 127.5) - 1.
+        image_array = image_array[60:150,::2,:]  / 255.
         # Prediction using the network
         steering_angle = float(model.predict(image_array[None, :, :, :], batch_size=1)) - 0.5
 
