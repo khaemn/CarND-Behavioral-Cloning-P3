@@ -930,4 +930,9 @@ Architecture cahnged, return to full-rgb
 
     i110s 473ms/step - loss: 0.0433 - val_loss: 0.0322
     it may be that 15 pochs is not enough, loss and val_oss were still falling.
-    Anyway let's check it.
+
+    Anyway let's check it. /127.5 - 1
+    
+    Now it passes the main track. RGB? New data? WHat has helped?..
+    it passes the hol ring - ok.
+
