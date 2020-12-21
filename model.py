@@ -25,7 +25,7 @@ LEFT_IMG_PATH_CSV_COLUMN =   1
 RIGHT_IMG_PATH_CSV_COLUMN =  2
 ANGLE_CSV_COLUMN = 3
 
-IMAGE_SIZE = (80, 320, 1)
+IMAGE_SIZE = (80, 320, 3)
 # The input image 160*320 is being cropped to 80*320 starting from
 # the 60th pixel (e.g. slightly higher than the vertical center),
 # to 140th pixel. The most part of top of the image and also botom 20
@@ -64,9 +64,9 @@ def generator(input_samples, img_path='data/IMG', batch_size=32):
                     image = cv2.imread(current_path)            # load
                     image = image[60:140,:,:]                   # crop to only see section with road
                     image = cv2.cvtColor(image, 
-                                         cv2.COLOR_BGR2GRAY)    # to grayscale
-                    image = image / 255.                        # to range 0 .. 1.0
-                    steering_correction = 0.25
+                                         cv2.COLOR_BGR2RGB)     # to rgb
+                    image = (image / 127.5) - 1.0               # to range -1 .. 1
+                    steering_correction = 0.1
                     # For images from the left camera the car should drive more to the
                     # right, and vice versa from images from right camera. Center
                     # camera images do not require correction.
@@ -84,12 +84,12 @@ def generator(input_samples, img_path='data/IMG', batch_size=32):
                     images.append(aug_image)
                     angles.append(aug_measurement + 0.5)
             assert(len(images) == len(angles))
-            X_train = np.expand_dims(np.array(images), 3)
+            X_train = np.array(images)
             y_train = np.array(angles)
             X_train, y_train = sklearn.utils.shuffle(X_train, y_train)
             assert(X_train[0].shape == IMAGE_SIZE)
             assert(len(X_train) == len(y_train))
-            assert(y_train[0].shape == [1])
+            assert(y_train[0].shape == ()) # must be a scalar with empty shape
             yield X_train, y_train
 
 
@@ -106,9 +106,9 @@ def build_behavioral_model():
 
     # 4 convolution-maxpooling segments; dropout after the very first one
     # seems the most common solution among small conv nets. 
-    model.add(Conv2D(8, 3, activation='relu'))
+    model.add(Conv2D(12, 3, activation='relu'))
     model.add(MaxPooling2D(pool_size=(2, 2), strides=2, padding="valid"))
-    model.add(Dropout(0.25))
+    model.add(Dropout(0.3))
 
     model.add(Conv2D(16, 3, activation='relu'))
     model.add(MaxPooling2D(pool_size=(2, 2), strides=2, padding="valid"))
@@ -116,15 +116,15 @@ def build_behavioral_model():
     model.add(Conv2D(32, 3, activation='relu'))
     model.add(MaxPooling2D(pool_size=(2, 2), strides=2, padding="valid"))
 
-    model.add(Conv2D(32, 3, activation='relu', padding="same"))
+    model.add(Conv2D(48, 3, activation='relu', padding="same"))
     model.add(MaxPooling2D(pool_size=(2, 2), strides=2, padding="valid"))
 
-    model.add(Dropout(0.25))
+    model.add(Dropout(0.2))
     model.add(Flatten())
     
     # Two dense layer to make decisions and the output neuron.
     # One layer has driven worse than two.
-    model.add(Dense(64, activation='relu'))
+    model.add(Dense(96, activation='relu'))
     model.add(Dense(64, activation='relu'))
     # The output is sigmoid with range 0..1, but then the steering angle is
     # converted to a real one by subtracting 0.5.
@@ -144,7 +144,7 @@ if __name__=="__main__":
     samples = read_data_log()
     train_samples, validation_samples = train_test_split(samples, test_size=0.2)
     
-    batch_size = 8
+    batch_size = 64
     
     train_generator = generator(train_samples, batch_size=batch_size)
     validation_generator = generator(validation_samples, batch_size=batch_size)

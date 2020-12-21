@@ -65,10 +65,10 @@ def telemetry(sid, data):
         # The current image from the center camera of the car
         imgString = data["image"]
         image = Image.open(BytesIO(base64.b64decode(imgString)))
-        image_array = np.expand_dims(cv2.cvtColor(np.asarray(image), cv2.COLOR_RGB2GRAY), 2)
+        image_array = np.asarray(image)
 
         # Preprocessing
-        image_array = image_array[60:140,:,:]  / 255.
+        image_array = (image_array[60:140,:,:]  / 127.5) - 1.
         # Prediction using the network
         steering_angle = float(model.predict(image_array[None, :, :, :], batch_size=1)) - 0.5
 
