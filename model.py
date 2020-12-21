@@ -62,9 +62,9 @@ def generator(input_samples, img_path='data/IMG', batch_size=32):
             angles = []
             for batch_sample in batch_samples:
                 measurement = float(batch_sample[ANGLE_CSV_COLUMN])
-                pictures_to_take = only_center
+                pictures_to_take = all_possible_pics
                 if (abs(measurement) < 0.05):
-                    pictures_to_take = all_possible_pics
+                    pictures_to_take = only_center
                 for img_side in pictures_to_take:
                     source_path = batch_sample[img_side]
                     current_path = os.path.join(img_path,
@@ -131,14 +131,14 @@ def build_behavioral_model():
     model.add(Conv2D(48, 3, activation='relu'))
     model.add(MaxPooling2D(pool_size=(2, 2), strides=2, padding="valid"))
 
-    model.add(Conv2D(96, 3, activation='relu', padding="same"))
+    model.add(Conv2D(64, 3, activation='relu', padding="same"))
     model.add(MaxPooling2D(pool_size=(2, 2), strides=2, padding="valid"))
 
     model.add(Flatten())
     model.add(Dropout(0.25))
     
     # Dense layers to make decisions and the output neuron.
-    model.add(Dense(96, activation='sigmoid'))
+    model.add(Dense(64, activation='sigmoid'))
     model.add(Dense(64, activation='sigmoid'))
     # The output is sigmoid with range 0..1, but then the steering angle is
     # converted to a real one by subtracting 0.5.
