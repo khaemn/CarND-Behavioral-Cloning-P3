@@ -1135,4 +1135,15 @@ retrain with early stopping at patience 3
                 not bad dynamic. retried on 1//10, with bsize 16
     data thresholding: if angle is 0, skip side pictures.
     
-    batch 32, 1//10 of the data, curve looks fine. Let's drive it.
+    batch 32, 1//10 of the data, curve looks fine. Let's drive it.'''''
+    
+    badly drives, rly. let's retrain with more kernels
+        but on the same data.
+    
+    
+    
+    
+    
+    
+    
+    

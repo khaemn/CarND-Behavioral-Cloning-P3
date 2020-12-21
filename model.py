@@ -113,32 +113,32 @@ def build_behavioral_model():
     # pooling would blur and soften it, providing less noise signal to
     # the model. Also, not the whole image resolution is crucial, so this
     # layer also shrinks it a bit.
-    model.add(AveragePooling2D(input_shape=IMAGE_SIZE, pool_size=(3, 3),
-              strides=1, padding="valid"))
+    #model.add(AveragePooling2D(input_shape=IMAGE_SIZE, pool_size=(3, 3),
+    #          strides=1, padding="valid"))
 
     # 4 convolution-maxpooling segments; dropout after the very first one
     # seems the most common solution among small conv nets. 
-    model.add(Conv2D(8, 3, activation='relu'))
+    model.add(Conv2D(8, 3, input_shape=IMAGE_SIZE, activation='relu'))
     model.add(MaxPooling2D(pool_size=(2, 2), strides=2, padding="valid"))
-    model.add(Dropout(0.25))
+    model.add(Dropout(0.5))
     
-    model.add(Conv2D(12, 3, activation='relu'))
-    model.add(MaxPooling2D(pool_size=(2, 2), strides=2, padding="valid"))
-
     model.add(Conv2D(16, 3, activation='relu'))
     model.add(MaxPooling2D(pool_size=(2, 2), strides=2, padding="valid"))
 
-    model.add(Conv2D(32, 3, activation='relu'))
+    model.add(Conv2D(24, 3, activation='relu'))
     model.add(MaxPooling2D(pool_size=(2, 2), strides=2, padding="valid"))
 
-    model.add(Conv2D(64, 3, activation='relu', padding="same"))
+    model.add(Conv2D(48, 3, activation='relu'))
+    model.add(MaxPooling2D(pool_size=(2, 2), strides=2, padding="valid"))
+
+    model.add(Conv2D(96, 3, activation='relu', padding="same"))
     model.add(MaxPooling2D(pool_size=(2, 2), strides=2, padding="valid"))
 
     model.add(Flatten())
     model.add(Dropout(0.25))
     
     # Dense layers to make decisions and the output neuron.
-    model.add(Dense(64, activation='sigmoid'))
+    model.add(Dense(96, activation='sigmoid'))
     model.add(Dense(64, activation='sigmoid'))
     # The output is sigmoid with range 0..1, but then the steering angle is
     # converted to a real one by subtracting 0.5.
@@ -165,10 +165,10 @@ if __name__=="__main__":
     if (PLOT_MODEL):
         plot_model(model, to_file='model_plot.png', show_shapes=True, show_layer_names=True)
         
-    samples = read_data_log()[::10]
+    samples = read_data_log()[::1]
     train_samples, validation_samples = train_test_split(samples, test_size=0.2)
     
-    batch_size = 32
+    batch_size = 16
     
     train_generator = generator(train_samples, batch_size=batch_size)
     validation_generator = generator(validation_samples, batch_size=batch_size)
