@@ -1176,8 +1176,35 @@ retrain with early stopping at patience 3
             fails.
     however, on 9 and 25 mph works fine!
     
+Writeup? What about the template? Do it in the jupyter notebook as well?
     
     
     
-    
-    
+    x-special/nautilus-clipboard
+copy
+./images/right_2020_12_04_19_28_57_373.jpg
+./images/flipped_right_2020_12_04_19_28_57_373.jpg
+./images/cropped_right_2020_12_04_19_28_57_373.jpg
+./images/left_2020_12_04_19_28_57_373.jpg
+./images/flipped_left_2020_12_04_19_28_57_373.jpg
+./images/cropped_left_2020_12_04_19_28_57_373.jpg
+./images/flipped_center_2020_12_04_19_28_57_373.jpg
+./images/cropped_center_2020_12_04_19_28_57_373.jpg
+./images/center_2020_12_04_19_28_57_373.jpg
+
+
+"Good" recovery images:
+
+regular_2 --- right_2020_12_21_19_06_25_209
+
+center_2020_12_21_19_06_51_857
+
+2020_12_21_19_04_51_028
+
+++  make recovery screenshots and processed files.
+++ restore model.py file
+
+* insert the images to writeup
+* form new todos for the writeup.
+* write some descriptions in the writeup
+
