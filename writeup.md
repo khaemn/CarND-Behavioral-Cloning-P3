@@ -180,7 +180,7 @@ After the collection process, I have merged the existing data from the workspace
 
 ```
 lines * (3 images for center, left, right) * (2 for flipped and original)
-to
+
 20653 * 3 * 2 == 123918 
 ```
 
