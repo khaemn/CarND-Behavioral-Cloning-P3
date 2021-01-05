@@ -65,11 +65,15 @@ def telemetry(sid, data):
         # The current image from the center camera of the car
         imgString = data["image"]
         image = Image.open(BytesIO(base64.b64decode(imgString)))
-        image_array = np.expand_dims(cv2.cvtColor(np.asarray(image), cv2.COLOR_RGB2GRAY), 2)
+        image_array = np.asarray(image)
 
-        # Preprocessing
-        image_array = image_array[60:140,:,:]  / 255.
-        # Prediction using the network
+        # Preprocessing: crop height to bottom part, which actually contains
+        # the road, and shrink twice in width to reduce the image size and
+        # necessary computations, then normalize to range 0..1.
+        image_array = image_array[60:150,::2,:]  / 255.
+        # Prediction using the network. As the model returns a value in range 0..1,
+        # centered around 0.5, we also subtract 0.5 here to shift to a proper
+        # steering angle range.
         steering_angle = float(model.predict(image_array[None, :, :, :], batch_size=1)) - 0.5
 
         throttle = controller.update(float(speed))
