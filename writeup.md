@@ -37,6 +37,10 @@ The goals / steps of this project are the following:
 [image_mud]: ./images/mud_road.jpg "Mud road"
 [image_mud_gray]: ./images/mud_road_grayscaled.jpg "Mud road grayscale"
 [image_mud_gray_cropped]: ./images/mud_road_grayscaled_cropped.jpg "Mud road grayscale cropped"
+[image_adv_1]: ./images/advanced_1.jpg "Advanced track"
+[image_adv_2]: ./images/advanced_2.jpg "Advanced track"
+[image_adv_3]: ./images/advanced_3.jpg "Advanced track"
+
 
 ## Rubric Points
 ### Here I will consider the [rubric points](https://review.udacity.com/#!/rubrics/432/view) individually and describe how I addressed each point in my implementation.  
@@ -116,21 +120,21 @@ I did not manage to overcome this while I was using a grayscaled input to the mo
 ![alt text][image_mud_gray]
 ![alt text][image_mud_gray_cropped]
 
-indeed, the road looks very similar, escpecially on the cropped frame. So, in order to improve the driving behavior in these cases, I have switched back to the 3-channel full-color inputs, added some more Conv2D filters and Dense neurons, and, finally, collected a bit more data with recovery movements.
+indeed, the road looks very similar, especially on the cropped frame. So, in order to improve the driving behavior in these cases, I have switched back to the 3-channel full-color inputs, added some more Conv2D filters and Dense neurons, and, finally, collected a bit more data with recovery movements.
 
-At the end of the process, the vehicle is able to drive autonomously around the track without leaving the road.
+At the end of the process, the vehicle is able to drive autonomously around the "main" track without leaving the road. Alas, despite I have used some "advanced" track data to train the model, it is not able to drive on it. I suppose, much more "advanced" track driving data is necessary to train the model to drive on both roads.
 
 #### 2. Final Model Architecture
 
 The final model architecture (model.py lines 121-145) consisted of a convolution neural network with the following layers and layer sizes ...
 
-Here is a visualization of the architecture (note: visualizing the architecture is optional according to the project rubric)
+Here is a visualization of the architecture:
 
 ![alt text][model_plot]
 
 #### 3. Creation of the Training Set & Training Process
 
-To capture good driving behavior, I first recorded two laps on track one using center lane driving. Here is an example image of left, center and right lane driving:
+To capture good driving behavior, I first recorded two laps on track one (in an opposite direction) using center lane driving. Here is an example image of left, center and right lane driving:
 
 |                     |                     |                     |
 |:-------------------:|:-------------------:|:-------------------:|
@@ -166,13 +170,17 @@ A recovery turn sample is displayed below:
 ![alt text][image_rec_2]
 ![alt text][image_rec_3]
 
-Then I repeated this process on track two in order to get more data points.
+Then I repeated this process on track two in order to get more data points. Example images from the "advanced" track:
+
+![alt text][image_adv_1]
+![alt text][image_adv_2]
+![alt text][image_adv_3]
 
 After the collection process, I have merged the existing data from the workspace with my gathered data, by copying all images into a same folder and concatenating the `.csv` files' content. Overall, the `.csv` log file contained 20653 lines, which gave
 
 ```
 lines * (3 images for center, left, right) * (2 for flipped and original)
-
+to
 20653 * 3 * 2 == 123918 
 ```
 
@@ -181,4 +189,10 @@ e.g. around 124k of data points.
 For training and validation, each image was cropped (as described a bit above) and normalized by dividing over 255 -- this way each pixel was laying inside 0..1 range.
 The validation splitting was performed using `sklearn.model_selection.train_test_split` function with ratio 0.2 (e.g. randomly selected 20% of the data turned into a validation set).
 
-I used this training data for training the model. The validation set helped determine if the model was over or under fitting. The ideal number of epochs was Z as evidenced by ... I used an adam optimizer so that manually training the learning rate wasn't necessary.
+I used this training data for training the model. The validation set helped determine if the model was over or under fitting. 
+
+I have used the early stop feature of the Keras framework (`model.py` lines 176..184) to use less GPU time, and stop right after the validation loss function stops to drop during 5 epochs in series. After the early stop, the EarlyStop functionality also restores the "best" weights (e.g. the ones with lowest validation loss). Such approach not only saves computational time, but also prevents the model from overfitting.
+
+An average number of training epochs was 15, and the validation loss dropped from starting 0.1 to ~0.03. 
+
+I used an adam optimizer so that manually training the learning rate wasn't necessary.
