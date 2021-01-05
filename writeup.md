@@ -34,6 +34,9 @@ The goals / steps of this project are the following:
 [image_rec_1]: ./images/recovery_1.jpg "Recovery turn sample"
 [image_rec_2]: ./images/recovery_2.jpg "Recovery turn sample"
 [image_rec_3]: ./images/recovery_3.jpg "Recovery turn sample"
+[image_mud]: ./images/mud_road.jpg "Mud road"
+[image_mud_gray]: ./images/mud_road_grayscaled.jpg "Mud road grayscale"
+[image_mud_gray_cropped]: ./images/mud_road_grayscaled_cropped.jpg "Mud road grayscale cropped"
 
 ## Rubric Points
 ### Here I will consider the [rubric points](https://review.udacity.com/#!/rubrics/432/view) individually and describe how I addressed each point in my implementation.  
@@ -106,11 +109,14 @@ Then I performed several rounds of training, observing the car behavior on the r
 
 The final step after training a model was to run the simulator to see how well the car was driving around track one. In first iterations there always was a spot where the vehicle fell off the track - usually, it was right after the stone bridge, where the asphalt road turns to the left, but there is also a mud road going straight:
 
-![alt text][image_rec_3]
+![alt text][image_mud]
 
-I did not manage to overcome this while I was using a grayscaled input to the model. I suppose it can be caused by the very similar appearance of the "main" asphalt track and this mud alternative road while in grayscale
+I did not manage to overcome this while I was using a grayscaled input to the model. I suppose it can be caused by the very similar appearance of the "main" asphalt track and this mud alternative road while in grayscale:
 
-, so, in order to improve the driving behavior in these cases, I collected a bit more data with recovery movements, and also added some more Dense neurons and Conv2D filters.
+![alt text][image_mud_gray]
+![alt text][image_mud_gray_cropped]
+
+indeed, the road looks very similar, escpecially on the cropped frame. So, in order to improve the driving behavior in these cases, I have switched back to the 3-channel full-color inputs, added some more Conv2D filters and Dense neurons, and, finally, collected a bit more data with recovery movements.
 
 At the end of the process, the vehicle is able to drive autonomously around the track without leaving the road.
 

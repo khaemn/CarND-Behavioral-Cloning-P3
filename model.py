@@ -70,10 +70,14 @@ def generator(input_samples, img_path='data/IMG', batch_size=32):
                     current_path = os.path.join(img_path,
                                                 source_path.split('/')[-1])
                     image = cv2.imread(current_path)            # load
-                    image = image[60:150,::2,:]                 # crop to only see section with road
+                    # Crop height to only see section with road, and shrink width,
+                    # as not all pixels carry useful information
+                    image = image[60:150,::2,:]
+                    # Convert to RGB, as the OpenCV uses BGR
                     image = cv2.cvtColor(image, 
-                                         cv2.COLOR_BGR2RGB)     # to rgb
-                    image = (image / 255.5)                     # to range 0 .. 1
+                                         cv2.COLOR_BGR2RGB)
+                    # Normalize
+                    image = (image / 255.5)
                     steering_correction = 0.15
                     # For images from the left camera the car should drive more to the
                     # right, and vice versa from images from right camera. Center
@@ -87,10 +91,6 @@ def generator(input_samples, img_path='data/IMG', batch_size=32):
                     angles.append(measurement + 0.5)
                     # Naiive augmentation via flipping both the image and steering angle:
                     aug_image = cv2.flip(image, 1)
-                    #cv2.imshow("image",cv2.cvtColor(((image+1.)*127.5).astype(np.uint8), cv2.COLOR_BGR2RGB))
-                    #cv2.imshow("aug_image",cv2.cvtColor(((aug_image+1.)*127.5).astype(np.uint8), cv2.COLOR_BGR2RGB))
-                    #cv2.waitKey(1000)
-                    #quit()
                     aug_measurement = -1.0 * measurement
                     # Append this image and corresponding steering angle
                     images.append(aug_image)
